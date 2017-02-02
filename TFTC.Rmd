@@ -1,0 +1,90 @@
+---
+title: "Crypt"
+author: "Yasmeen Wilson"
+date: "December 27, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+install.packages("rvest", repos="http://cran.rstudio.com/")
+install.packages("colorspace", repos="http://cran.rstudio.com/")
+install.packages("plotly", repos="http://cran.rstudio.com/")
+install.packages("ggplot2", repos="http://cran.rstudio.com/")
+install.packages("DT", repos="http://cran.rstudio.com/")
+install.packages("curl", repos="http://cran.rstudio.com/")
+install.packages("XML", repos="http://cran.rstudio.com/")
+
+library(rvest)
+library(stringr)
+library(DT)
+```
+
+
+```{r}
+
+Tales_from_the_Crypt <- read_html("http://www.imdb.com/title/tt0096708/eprate?ref_=ttep_ql_3")
+
+UserRating <- Tales_from_the_Crypt %>%
+  html_nodes("td:nth-child(3)")%>%
+  html_text()
+
+URmat <- matrix(UserRating, ncol = 1, byrow = TRUE)
+URdf <- as.data.frame(URmat)
+colnames(URdf) <- c("Rating")
+Rating <- head(URdf, -1)
+
+##Rating
+
+EpTitle <- Tales_from_the_Crypt%>%
+  html_nodes("td:nth-child(2)")%>%
+  html_text()
+
+ETmat <- matrix(EpTitle, ncol = 1, byrow = TRUE)
+ETdf <- as.data.frame(ETmat)
+colnames(ETdf) <- c("Title")
+Episode <- head(ETdf, -1)
+
+Season <- Tales_from_the_Crypt %>%
+  html_nodes("td:nth-child(1)")%>%
+  html_text()
+
+SeasonSplit <- strsplit(Season, "[.]")
+
+
+Seasonmat <- matrix(unlist(SeasonSplit), ncol = 2, byrow = TRUE)
+Seasondf <- as.data.frame(Seasonmat)
+colnames(Seasondf) <- c("Season", "Episode")
+Seasondf <- head(Seasondf, -1)
+##Seasondf
+
+comb <- cbind(Episode, Seasondf, Rating)
+datatable(comb)
+```
+
+
+```{r}
+session <- html_session("http://www.imdb.com/title/tt0096708/eprate?ref_=ttep_ql_3")
+
+link <- session%>%
+  html_nodes("td > a")%>%
+  html_attr("href")
+link <- paste(link, ")", sep = "")
+link <- paste('[Link](', link, sep = "")
+##link <- paste0("<a href='",link,">LINK</a>")
+
+
+linkmat <- matrix(link, ncol = 1, byrow = TRUE)
+linkdf <- as.data.frame(linkmat)
+colnames(linkdf) <- c("INFO")
+
+epi <- cbind(Episode, link)
+datatable(epi, escape = FALSE)
+```
+
+
+```{r}
+
+```
+
